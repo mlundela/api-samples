@@ -65,13 +65,20 @@ public class Auth {
         DataStore<StoredCredential> datastore = fileDataStoreFactory.getDataStore(credentialDatastore);
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, scopes).setCredentialDataStore(datastore)
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, scopes)
+                .setCredentialDataStore(datastore)
+                .setAccessType("offline")
+                .setApprovalPrompt("force")
                 .build();
 
         // Build the local server and bind it to port 8080
         LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(8080).build();
 
         // Authorize.
-        return new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
+        Credential user = new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
+
+        System.out.println("RefreshToken: " + user.getRefreshToken());
+
+        return user;
     }
 }
